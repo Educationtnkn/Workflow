@@ -1,0 +1,169 @@
+{
+  "model": {
+    "DefinitionId": "SpanWorkflow_V2",
+    "Name": "Span Activity Workflow",
+    "IsLatest": true,
+    "IsPublished": true,
+    "Variables": [
+      {
+        "Id": "var-inputname",
+        "Name": "inputname",
+        "TypeName": "String"
+      },
+      {
+        "Id": "var-entityId",
+        "Name": "entityId",
+        "TypeName": "String"
+      },
+      {
+        "Id": "var-taskCategory",
+        "Name": "taskCategory",
+        "TypeName": "String"
+      },
+      {
+        "Id": "var-HttpRequestBody",
+        "Name": "HttpRequestBody",
+        "TypeName": "Object"
+      }
+    ],
+    "Root": {
+      "id": "Flowchart1",
+      "type": "Elsa.Flowchart",
+      "activities": [
+        {
+          "id": "setValuetoName",
+          "type": "Elsa.SetVariable",
+          "customProperties": { "canStartWorkflow": true },
+          "variable": {
+            "id": "var-inputname",
+            "name": "inputname"
+          },
+          "value": {
+            "expression": {
+              "type": "JavaScript",
+              "value": "getInput('Name') ? getInput('Name') : 'Bob'"
+            }
+          }
+        },
+        {
+          "id": "SaveInputs",
+          "type": "Elsa.RunJavaScript",
+          "script": {
+            "expression": {
+              "type": "JavaScript",
+              "value": "setVariable('entityId', getInput('entityId')); setVariable('taskCategory', getInput('taskCategory'));"
+            }
+          }
+        },
+        {
+          "id": "waitForActivityInputV2",
+          "type": "Elsa.HttpEndpoint",
+          "version": 1,
+          "customProperties": {
+            "canStartWorkflow": false,
+            "runAsynchronously": false
+          },
+          "metadata": {},
+          "path": {
+            "typeName": "String",
+            "expression": {
+              "type": "Literal",
+              "value": "dynamic/activities/V2"
+            }
+          },
+          "supportedMethods": {
+            "typeName": "List<String>",
+            "expression": {
+              "type": "Object",
+              "value": "[\"POST\"]"
+            }
+          },
+          "authorize": {
+            "typeName": "Boolean",
+            "expression": {
+              "type": "Literal",
+              "value": false
+            }
+          },
+          "policy": {
+            "typeName": "String",
+            "expression": { "type": "Literal" }
+          },
+          "parsedContent": {
+            "typeName": "Object",
+            "memoryReference": { "id": "var-HttpRequestBody" }
+          },
+          "queryStringData": null,
+          "result": null
+        },
+
+        {
+          "id": "SpanActivityV2",
+          "version": 1,
+          "type": "Custom.DynamicPlaceholderActivityV2",
+          "waitForCompletion": {
+            "typeName": "Boolean",
+            "expression": {
+              "type": "Literal",
+              "value": true
+            }
+          }
+        },
+
+        
+        {
+          "id": "writeName",
+          "type": "Elsa.WriteLine",
+          "text": {
+            "expression": {
+              "type": "JavaScript",
+              "value": "'Name: ' + getVariable('inputname')"
+            }
+          }
+        }
+      ],
+      "connections": [
+        {
+          "source": {
+            "activity": "setValuetoName",
+            "port": "Done"
+          },
+          "target": {
+            "activity": "SaveInputs",
+            "port": "In"
+          }
+        },
+        {
+          "source": {
+            "activity": "SaveInputs",
+            "port": "Done"
+          },
+          "target": {
+            "activity": "waitForActivityInputV2",
+            "port": "In"
+          }
+        },
+        {
+          "source": {
+            "activity": "waitForActivityInputV2",
+            "port": "Done"
+          },
+          "target": {
+            "activity": "SpanActivityV2",
+            "port": "In"
+          }
+        },
+        {
+          "source": {
+            "activity": "SpanActivityV2",
+            "port": "Done"
+          },
+          "target": {
+            "activity": "writeName",
+            "port": "In"
+          }
+        }
+      ]
+    }
+  }
+}

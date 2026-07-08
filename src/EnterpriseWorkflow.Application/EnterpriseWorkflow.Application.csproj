@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <Compile Remove="Stubs\DummyWorkflowDefinitionRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EnterpriseWorkflow.Domain\EnterpriseWorkflow.Domain.csproj" />
+    <ProjectReference Include="..\EnterpriseWorkflow.Utility\EnterpriseWorkflow.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Ports\Inbound\Implementation\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ND.FW.ExceptionHandling" Version="0.0.5" />
+    <PackageReference Include="ND.FW.Observability" Version="0.0.5" />
+	  
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

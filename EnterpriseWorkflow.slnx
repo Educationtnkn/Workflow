@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EnterpriseWorkflow.Api/EnterpriseWorkflow.Api.csproj" />
+    <Project Path="src/EnterpriseWorkflow.Application/EnterpriseWorkflow.Application.csproj" />
+    <Project Path="src/EnterpriseWorkflow.Core/EnterpriseWorkflow.Core.csproj" />
+    <Project Path="src/EnterpriseWorkflow.Domain/EnterpriseWorkflow.Domain.csproj" />
+    <Project Path="src/EnterpriseWorkflow.Elsa/EnterpriseWorkflow.Elsa.csproj" />
+    <Project Path="src/EnterpriseWorkflow.Storage/EnterpriseWorkflow.Storage.csproj" />
+    <Project Path="src/EnterpriseWorkflow.Utility/EnterpriseWorkflow.Utilities.csproj" Id="db5acf4d-e565-4b7d-a4d0-4f16e786c4f0" />
+  </Folder>
+</Solution>

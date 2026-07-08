@@ -1,0 +1,26 @@
+[
+  {
+    "activityId": "ACT001",
+    "Name": "WriteLine",
+    "type": "Elsa.WriteLine",
+    "Props": {
+      "text": "Hello"
+    }
+  },
+  {
+    "activityId": "ACT002",
+    "Name": "Delay",
+    "type": "Elsa.Delay",
+    "Props": {
+      "seconds": "00:00:05"
+    }
+  },
+  {
+    "activityId": "ACT003",
+    "Name": "RunJavaScript",
+    "type": "Elsa.RunJavaScript",
+    "Props": {
+      "script": "setVariable('done', true);"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/src/EnterpriseWorkflow.Api/bin/Debug/net8.0
+/src/EnterpriseWorkflow.Application/bin/Debug/net8.0
+/src/EnterpriseWorkflow.Storage/bin/Debug/net8.0
+/src/EnterpriseWorkflow.Api/obj/Debug/net8.0/EnterpriseWorkflow.Api.AssemblyInfo.cs
+# Ignore all bin and obj folders under src
+/src/**/bin/
+/src/**/obj/
+
+# Visual Studio
+/.vs/

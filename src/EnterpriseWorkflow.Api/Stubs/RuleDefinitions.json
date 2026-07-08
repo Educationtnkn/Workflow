@@ -1,0 +1,89 @@
+[
+  {
+    "ruleSetId": 20000,
+    "ruleSetName": "SME Task Spawn Evaluation Rules",
+    "ruleSetType": "Routing",
+    "strategy": "AllMatches",
+    "workflowName": "fwa-case-routing",
+    "rules": [
+      {
+        "ruleId": 30001,
+        "ruleSetId": 20000,
+        "ruleName": "Clinical Concern Exists",
+        "priority": 1,
+        "evaluationType": "Expression",
+        "evaluatorReference": "facts.clinicalConcern == true && (facts.SMETask == \"true\" || facts.SMETask == \"Not Applicable\" )",
+        "successEvent": "ClinicalConcern",
+        "isActive": true
+      },
+      {
+        "ruleId": 30002,
+        "ruleSetId": 20000,
+        "ruleName": "Claim Anomaly Exists",
+        "priority": 1,
+        "evaluationType": "Expression",
+        "evaluatorReference": "facts.claimAnomaly == true && (facts.SMETask == \"true\" || facts.SMETask == \"Not Applicable\" )",
+        "successEvent": "ClaimAnomaly",
+        "isActive": true
+      },
+      {
+        "ruleId": 30003,
+        "ruleSetId": 20000,
+        "ruleName": "Provider Behavior Concern Exists",
+        "priority": 1,
+        "evaluationType": "Expression",
+        "evaluatorReference": "facts.providerBehaviourConcern == true && (facts.SMETask == \"true\" || facts.SMETask == \"Not Applicable\" )",
+        "successEvent": "ProviderBehaviourConcern",
+        "isActive": true
+      },
+      {
+        "ruleId": 30004,
+        "ruleSetId": 20000,
+        "ruleName": "No SME Task Required",
+        "priority": 1,
+        "evaluationType": "Expression",
+        "evaluatorReference": "facts.clinicalConcern == false && facts.claimAnomaly == false && facts.providerBehaviorConcern == false",
+        "successEvent": "NoSMERequired",
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "ruleSetId": 20005,
+    "ruleSetName": "SME Join Completion Rule",
+    "ruleSetType": "Join",
+    "strategy": "AllMatches",
+    "workflowName": "sme-join-completion",
+    "rules": [
+      {
+        "ruleId": 30005,
+        "ruleSetId": 20005,
+        "ruleName": "All Spawned SME Tasks Completed",
+        "priority": 1,
+        "evaluationType": "Expression",
+        "evaluatorReference": "facts.spawnedCount == facts.completedCount",
+        "successEvent": "AllSMECompleted",
+        "isActive": true
+      }
+    ]
+  },
+  {
+    "ruleSetId": 20006,
+    "ruleSetName": "Optional Action Completed Rule",
+    "ruleSetType": "Routing",
+    "strategy": "FirstMatchWins",
+    "workflowName": "optional-action-completed",
+    "rules": [
+      {
+        "ruleId": 30006,
+        "ruleSetId": 20006,
+        "ruleName": "Optional Action Completed",
+        "priority": 1,
+        "evaluationType": "Expression",
+        "evaluatorReference": "facts.status == \"COMPLETED\"",
+        "successEvent": "OptionalActionCompleted",
+        "isActive": true
+      }
+    ]
+  }
+]

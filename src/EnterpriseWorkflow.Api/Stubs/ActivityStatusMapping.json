@@ -1,0 +1,450 @@
+{
+  "workflowDefinitionId": "FWAUseCaseWorkflowNew-2",
+  "workflowName": "FWA Use Case Example New 2",
+  "activityStatusMappings": [
+    {
+      "activityId": "SaveInputs",
+      "activityName": "Save Inputs",
+      "activityType": "Elsa.RunJavaScript",
+      "statusMappings": {
+        "Running": "Saving workflow input variables",
+        "Suspended": "Input save paused",
+        "Completed": "Workflow inputs saved successfully",
+        "Failed": "Failed to save workflow inputs",
+        "Cancelled": "Input save cancelled"
+      }
+    },
+    {
+      "activityId": "CaseInitiated",
+      "activityName": "Case Initiated",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Initiating case via API",
+        "Suspended": "Case initiation waiting for sub-workflow",
+        "Completed": "Case initiated successfully",
+        "Failed": "Case initiation API call failed",
+        "Cancelled": "Case initiation cancelled"
+      }
+    },
+    {
+      "activityId": "CheckCaseInitiatedResult",
+      "activityName": "Check Case Initiated Result",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Evaluating case initiation result",
+        "Suspended": "Case initiation check suspended",
+        "Completed": "Case initiation result evaluated",
+        "Failed": "Case initiation result check failed",
+        "Cancelled": "Case initiation result check cancelled"
+      }
+    },
+    {
+      "activityId": "LogCaseInitiatedFailure",
+      "activityName": "Log Case Initiated Failure",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Logging case initiation failure",
+        "Suspended": "Case failure log suspended",
+        "Completed": "Case initiation failure logged",
+        "Failed": "Unable to log case initiation failure",
+        "Cancelled": "Case failure logging cancelled"
+      }
+    },
+    {
+      "activityId": "ExecutePreliminaryReview",
+      "activityName": "Execute Preliminary Review",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Preliminary review task in progress",
+        "Suspended": "Preliminary review awaiting user action",
+        "Completed": "Preliminary review completed",
+        "Failed": "Preliminary review task failed",
+        "Cancelled": "Preliminary review cancelled"
+      }
+    },
+    {
+      "activityId": "EvaluateRules",
+      "activityName": "Evaluate Rules",
+      "activityType": "MyApp.EvaluateRuleActivity",
+      "statusMappings": {
+        "Running": "Evaluating FWA routing rules",
+        "Suspended": "Rule evaluation suspended",
+        "Completed": "FWA rules evaluated, branches determined",
+        "Failed": "Rule evaluation failed",
+        "Cancelled": "Rule evaluation cancelled"
+      }
+    },
+    {
+      "activityId": "step-006",
+      "activityName": "Parallel Fork",
+      "activityType": "Elsa.FlowFork",
+      "statusMappings": {
+        "Running": "Forking into parallel review branches",
+        "Suspended": "Parallel fork suspended",
+        "Completed": "Parallel branches forked successfully",
+        "Failed": "Fork into parallel branches failed",
+        "Cancelled": "Parallel fork cancelled"
+      }
+    },
+    {
+      "activityId": "IfClinical",
+      "activityName": "If Clinical",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Checking for clinical concern flag",
+        "Suspended": "Clinical check suspended",
+        "Completed": "Clinical concern check completed",
+        "Failed": "Clinical concern check failed",
+        "Cancelled": "Clinical concern check cancelled"
+      }
+    },
+    {
+      "activityId": "ExecuteClinical",
+      "activityName": "Execute Clinical Review",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Clinical review task in progress",
+        "Suspended": "Clinical review awaiting user action",
+        "Completed": "Clinical review task submitted",
+        "Failed": "Clinical review task failed",
+        "Cancelled": "Clinical review task cancelled"
+      }
+    },
+    {
+      "activityId": "EventClinicalReview",
+      "activityName": "Event: Clinical Review",
+      "activityType": "Elsa.Event",
+      "statusMappings": {
+        "Running": "Waiting for Clinical Review event",
+        "Suspended": "Clinical Review event pending user submission",
+        "Completed": "Clinical Review event received",
+        "Failed": "Clinical Review event timed out or failed",
+        "Cancelled": "Clinical Review event cancelled"
+      }
+    },
+    {
+      "activityId": "ClinicalCompleted",
+      "activityName": "Clinical Completed",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Posting clinical completion status",
+        "Suspended": "Clinical completion API call suspended",
+        "Completed": "Clinical branch status updated successfully",
+        "Failed": "Clinical completion API call failed",
+        "Cancelled": "Clinical completion update cancelled"
+      }
+    },
+    {
+      "activityId": "CheckClinicalResult",
+      "activityName": "Check Clinical Result",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Evaluating clinical update result",
+        "Suspended": "Clinical result check suspended",
+        "Completed": "Clinical result evaluated",
+        "Failed": "Clinical result check failed",
+        "Cancelled": "Clinical result check cancelled"
+      }
+    },
+    {
+      "activityId": "LogClinicalFailure",
+      "activityName": "Log Clinical Failure",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Logging clinical branch failure",
+        "Suspended": "Clinical failure log suspended",
+        "Completed": "Clinical failure logged",
+        "Failed": "Unable to log clinical failure",
+        "Cancelled": "Clinical failure logging cancelled"
+      }
+    },
+    {
+      "activityId": "ClinicalBranchDone",
+      "activityName": "Clinical Branch Done",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Completing clinical branch",
+        "Suspended": "Clinical branch completion suspended",
+        "Completed": "Clinical branch completed",
+        "Failed": "Clinical branch completion failed",
+        "Cancelled": "Clinical branch completion cancelled"
+      }
+    },
+    {
+      "activityId": "IfClaim",
+      "activityName": "If Claim",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Checking for claim anomaly flag",
+        "Suspended": "Claim check suspended",
+        "Completed": "Claim anomaly check completed",
+        "Failed": "Claim anomaly check failed",
+        "Cancelled": "Claim anomaly check cancelled"
+      }
+    },
+    {
+      "activityId": "ExecuteClaim",
+      "activityName": "Execute Claim Review",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Claim anomaly review task in progress",
+        "Suspended": "Claim review awaiting user action",
+        "Completed": "Claim anomaly review task submitted",
+        "Failed": "Claim anomaly review task failed",
+        "Cancelled": "Claim anomaly review task cancelled"
+      }
+    },
+    {
+      "activityId": "EventClaimReview",
+      "activityName": "Event: Claim Review",
+      "activityType": "Elsa.Event",
+      "statusMappings": {
+        "Running": "Waiting for Claim Review event",
+        "Suspended": "Claim Review event pending user submission",
+        "Completed": "Claim Review event received",
+        "Failed": "Claim Review event timed out or failed",
+        "Cancelled": "Claim Review event cancelled"
+      }
+    },
+    {
+      "activityId": "ClaimCompleted",
+      "activityName": "Claim Completed",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Posting claim completion status",
+        "Suspended": "Claim completion API call suspended",
+        "Completed": "Claim branch status updated successfully",
+        "Failed": "Claim completion API call failed",
+        "Cancelled": "Claim completion update cancelled"
+      }
+    },
+    {
+      "activityId": "CheckClaimResult",
+      "activityName": "Check Claim Result",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Evaluating claim update result",
+        "Suspended": "Claim result check suspended",
+        "Completed": "Claim result evaluated",
+        "Failed": "Claim result check failed",
+        "Cancelled": "Claim result check cancelled"
+      }
+    },
+    {
+      "activityId": "LogClaimFailure",
+      "activityName": "Log Claim Failure",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Logging claim branch failure",
+        "Suspended": "Claim failure log suspended",
+        "Completed": "Claim failure logged",
+        "Failed": "Unable to log claim failure",
+        "Cancelled": "Claim failure logging cancelled"
+      }
+    },
+    {
+      "activityId": "ClaimBranchDone",
+      "activityName": "Claim Branch Done",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Completing claim branch",
+        "Suspended": "Claim branch completion suspended",
+        "Completed": "Claim branch completed",
+        "Failed": "Claim branch completion failed",
+        "Cancelled": "Claim branch completion cancelled"
+      }
+    },
+    {
+      "activityId": "IfProvider",
+      "activityName": "If Provider",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Checking for provider behaviour concern flag",
+        "Suspended": "Provider check suspended",
+        "Completed": "Provider behaviour check completed",
+        "Failed": "Provider behaviour check failed",
+        "Cancelled": "Provider behaviour check cancelled"
+      }
+    },
+    {
+      "activityId": "ExecuteProvider",
+      "activityName": "Execute Provider Review",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Provider behaviour review task in progress",
+        "Suspended": "Provider review awaiting user action",
+        "Completed": "Provider behaviour review task submitted",
+        "Failed": "Provider behaviour review task failed",
+        "Cancelled": "Provider behaviour review task cancelled"
+      }
+    },
+    {
+      "activityId": "EventProviderReview",
+      "activityName": "Event: Provider Review",
+      "activityType": "Elsa.Event",
+      "statusMappings": {
+        "Running": "Waiting for Provider Review event",
+        "Suspended": "Provider Review event pending user submission",
+        "Completed": "Provider Review event received",
+        "Failed": "Provider Review event timed out or failed",
+        "Cancelled": "Provider Review event cancelled"
+      }
+    },
+    {
+      "activityId": "ProviderCompleted",
+      "activityName": "Provider Completed",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Posting provider completion status",
+        "Suspended": "Provider completion API call suspended",
+        "Completed": "Provider branch status updated successfully",
+        "Failed": "Provider completion API call failed",
+        "Cancelled": "Provider completion update cancelled"
+      }
+    },
+    {
+      "activityId": "CheckProviderResult",
+      "activityName": "Check Provider Result",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Evaluating provider update result",
+        "Suspended": "Provider result check suspended",
+        "Completed": "Provider result evaluated",
+        "Failed": "Provider result check failed",
+        "Cancelled": "Provider result check cancelled"
+      }
+    },
+    {
+      "activityId": "LogProviderFailure",
+      "activityName": "Log Provider Failure",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Logging provider branch failure",
+        "Suspended": "Provider failure log suspended",
+        "Completed": "Provider failure logged",
+        "Failed": "Unable to log provider failure",
+        "Cancelled": "Provider failure logging cancelled"
+      }
+    },
+    {
+      "activityId": "ProviderBranchDone",
+      "activityName": "Provider Branch Done",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Completing provider branch",
+        "Suspended": "Provider branch completion suspended",
+        "Completed": "Provider branch completed",
+        "Failed": "Provider branch completion failed",
+        "Cancelled": "Provider branch completion cancelled"
+      }
+    },
+    {
+      "activityId": "step-006_Join",
+      "activityName": "Parallel Join (WaitAll)",
+      "activityType": "Elsa.FlowJoin",
+      "statusMappings": {
+        "Running": "Waiting for all parallel branches to complete",
+        "Suspended": "Parallel join suspended, branches still running",
+        "Completed": "All parallel branches joined successfully",
+        "Failed": "Parallel join failed",
+        "Cancelled": "Parallel join cancelled"
+      }
+    },
+    {
+      "activityId": "ExecuteFinalReview",
+      "activityName": "Execute Final Review",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Final review task in progress",
+        "Suspended": "Final review awaiting user action",
+        "Completed": "Final review task submitted",
+        "Failed": "Final review task failed",
+        "Cancelled": "Final review task cancelled"
+      }
+    },
+    {
+      "activityId": "FinalDisposition",
+      "activityName": "Final Disposition",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Recording final disposition via API",
+        "Suspended": "Final disposition API call suspended",
+        "Completed": "Final disposition recorded successfully",
+        "Failed": "Final disposition API call failed",
+        "Cancelled": "Final disposition update cancelled"
+      }
+    },
+    {
+      "activityId": "CheckFinalDispositionResult",
+      "activityName": "Check Final Disposition Result",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Evaluating final disposition result",
+        "Suspended": "Final disposition check suspended",
+        "Completed": "Final disposition result evaluated",
+        "Failed": "Final disposition result check failed",
+        "Cancelled": "Final disposition result check cancelled"
+      }
+    },
+    {
+      "activityId": "LogFinalDispositionFailure",
+      "activityName": "Log Final Disposition Failure",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Logging final disposition failure",
+        "Suspended": "Final disposition failure log suspended",
+        "Completed": "Final disposition failure logged",
+        "Failed": "Unable to log final disposition failure",
+        "Cancelled": "Final disposition failure logging cancelled"
+      }
+    },
+    {
+      "activityId": "CaseClosed",
+      "activityName": "Case Closed",
+      "activityType": "Elsa.ExecuteWorkflow",
+      "statusMappings": {
+        "Running": "Closing case via API",
+        "Suspended": "Case close API call suspended",
+        "Completed": "Case closed successfully",
+        "Failed": "Case close API call failed",
+        "Cancelled": "Case close cancelled"
+      }
+    },
+    {
+      "activityId": "CheckCaseClosedResult",
+      "activityName": "Check Case Closed Result",
+      "activityType": "Elsa.FlowDecision",
+      "statusMappings": {
+        "Running": "Evaluating case close result",
+        "Suspended": "Case close check suspended",
+        "Completed": "Case close result evaluated",
+        "Failed": "Case close result check failed",
+        "Cancelled": "Case close result check cancelled"
+      }
+    },
+    {
+      "activityId": "WorkflowComplete",
+      "activityName": "Workflow Complete",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Finalising workflow completion log",
+        "Suspended": "Workflow completion log suspended",
+        "Completed": "Workflow completed successfully end-to-end",
+        "Failed": "Workflow completion log failed",
+        "Cancelled": "Workflow completion log cancelled"
+      }
+    },
+    {
+      "activityId": "LogCaseClosedFailure",
+      "activityName": "Log Case Closed Failure",
+      "activityType": "Elsa.WriteLine",
+      "statusMappings": {
+        "Running": "Logging case close failure",
+        "Suspended": "Case close failure log suspended",
+        "Completed": "Case close failure logged",
+        "Failed": "Unable to log case close failure",
+        "Cancelled": "Case close failure logging cancelled"
+      }
+    }
+  ]
+}

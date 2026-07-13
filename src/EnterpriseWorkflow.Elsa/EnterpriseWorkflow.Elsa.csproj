@@ -12,6 +12,8 @@
 
     <PackageReference Include="ND.FW.RDBM" Version="0.0.17" />
 
+    <PackageReference Include="NdRulesEngine" Version="1.0.0" />
+
     <PackageReference Include="Quartz.Serialization.SystemTextJson" Version="3.18.1" />
 	  <PackageReference Include="ND.FW.Observability" Version="0.0.5" />
   </ItemGroup>

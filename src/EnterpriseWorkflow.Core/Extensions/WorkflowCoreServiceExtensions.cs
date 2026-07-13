@@ -1,4 +1,5 @@
-﻿using Elsa.Workflows.LogPersistence.Strategies;
+﻿using Acornima.Ast;
+using Elsa.Workflows.LogPersistence.Strategies;
 using Elsa.Workflows.Management;
 using EnterpriseWorkflow.Application.Ports.Inbound.Interface;
 using EnterpriseWorkflow.Application.Ports.Outbound.AdapterInterface;
@@ -19,6 +20,7 @@ using EnterpriseWorkflow.Utilities.CommonUtility;
 using EnterpriseWorkflow.Utilities.Observability;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NdRulesEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,6 +80,9 @@ namespace EnterpriseWorkflow.Core.Extensions
             services.AddScoped<IBuildPublishElsaDefinition, BuildPublishElsaDefinition>();
 
             services.AddScoped<IConfigNodeLookupRepository, ConfigNodeLookupRepository>();
+
+
+    
 
             //services.AddHttpClient("ElsaServer", c =>
             //{

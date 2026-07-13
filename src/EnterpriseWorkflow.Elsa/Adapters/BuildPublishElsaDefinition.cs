@@ -1,5 +1,8 @@
-﻿using Elsa.Workflows.Management;
+﻿using Elsa.Workflows;
+using Elsa.Workflows.Management;
 using Elsa.Workflows.Management.Entities;
+using Elsa.Workflows.Management.Models;
+using Elsa.Workflows.Management.Services;
 using EnterpriseWorkflow.Application.Model;
 using EnterpriseWorkflow.Application.Ports.Outbound.AdapterInterface;
 using EnterpriseWorkflow.Application.Ports.Outbound.AdapterInterface;
@@ -26,6 +29,8 @@ namespace EnterpriseWorkflow.Elsa.Adapters;
     private readonly ILogger<BuildPublishElsaDefinition> _logger;
     private readonly IConfiguration _configuration;
 
+    private readonly IWorkflowDefinitionImporter _importer;
+    private readonly IApiSerializer _apiSerializer;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -35,12 +40,14 @@ namespace EnterpriseWorkflow.Elsa.Adapters;
 
     public BuildPublishElsaDefinition(IHttpClientFactory httpFactory,
         IConfiguration configuration,
-        ILogger<BuildPublishElsaDefinition> logger)
+        ILogger<BuildPublishElsaDefinition> logger, IWorkflowDefinitionImporter workflowDefinitionImporter, IApiSerializer apiSerializer)
         {
         _elsaClient = httpFactory.CreateClient("ElsaServer");
         _apiPrefix = (configuration["Elsa:ServerUrl"] ?? "elsa/api").TrimEnd('/');
         _logger = logger;
         _configuration = configuration;
+        _importer = workflowDefinitionImporter;
+        _apiSerializer = apiSerializer;
     }
 
        public async Task<WorkflowPublishResult> BuildElsaDefinition(
@@ -57,45 +64,58 @@ namespace EnterpriseWorkflow.Elsa.Adapters;
             // Build Elsa-specific JSON — all Elsa knowledge is here
             var definition = BuildElsaDefinition(request);
 
-            var importUrl = $"{_apiPrefix}/workflow-definitions/{definition.DefinitionId}/import";
-            var publishUrl = $"{_apiPrefix}/workflow-definitions/{definition.DefinitionId}/publish";
 
-            _logger.LogInformation(
-                "[ElsaPublishAdapter] Import  PUT  {Base}{Url}",
-                _elsaClient.BaseAddress, importUrl);
+            var json = JsonSerializer.Serialize(new { model = definition }, JsonOpts); // wrap in "model" like ConvertToElsaJson does
 
-            var importResponse = await _elsaClient.PutAsJsonAsync(
-                importUrl, definition, JsonOpts, ct);
+            var saveRequest = _apiSerializer.Deserialize<SaveWorkflowDefinitionRequest>(json);
+            var importResult = await _importer.ImportAsync(saveRequest, ct);
+
+            if (!importResult.Succeeded)
+            {
+                var errors = string.Join("; ", importResult.ValidationErrors.Select(e => e.Message));
+                _logger.LogError("[ElsaPublishAdapter] Import failed: {Errors}", errors);
+                return new WorkflowPublishResult(false, errors);
+            }
+
+            //var importUrl = $"{_apiPrefix}/workflow-definitions/{definition.DefinitionId}/import";
+            //var publishUrl = $"{_apiPrefix}/workflow-definitions/{definition.DefinitionId}/publish";
+
+            //_logger.LogInformation(
+            //    "[ElsaPublishAdapter] Import  PUT  {Base}{Url}",
+            //    _elsaClient.BaseAddress, importUrl);
+
+            //var importResponse = await _elsaClient.PutAsJsonAsync(
+            //    importUrl, definition, JsonOpts, ct);
 
         
 
-            if (!importResponse.IsSuccessStatusCode)
-            {
-                var body = await importResponse.Content.ReadAsStringAsync(ct);
-                _logger.LogError(
-                    "[ElsaPublishAdapter] Import failed {Status} {Url} {Body}",
-                    (int)importResponse.StatusCode, importUrl, body);
+            //if (!importResponse.IsSuccessStatusCode)
+            //{
+            //    var body = await importResponse.Content.ReadAsStringAsync(ct);
+            //    _logger.LogError(
+            //        "[ElsaPublishAdapter] Import failed {Status} {Url} {Body}",
+            //        (int)importResponse.StatusCode, importUrl, body);
 
-                return new WorkflowPublishResult(false,
-                    $"Elsa import {(int)importResponse.StatusCode}: {body}");
-            }
+            //    return new WorkflowPublishResult(false,
+            //        $"Elsa import {(int)importResponse.StatusCode}: {body}");
+            //}
 
-            _logger.LogInformation(
-                "[ElsaPublishAdapter] Publish POST {Base}{Url}",
-                _elsaClient.BaseAddress, publishUrl);
+            //_logger.LogInformation(
+            //    "[ElsaPublishAdapter] Publish POST {Base}{Url}",
+            //    _elsaClient.BaseAddress, publishUrl);
 
-            var publishResponse = await _elsaClient.PostAsync(publishUrl, null, ct);
+            //var publishResponse = await _elsaClient.PostAsync(publishUrl, null, ct);
 
-            if (!publishResponse.IsSuccessStatusCode)
-            {
-                var body = await publishResponse.Content.ReadAsStringAsync(ct);
-                _logger.LogError(
-                    "[ElsaPublishAdapter] Publish failed {Status} {Url} {Body}",
-                    (int)publishResponse.StatusCode, publishUrl, body);
+            //if (!publishResponse.IsSuccessStatusCode)
+            //{
+            //    var body = await publishResponse.Content.ReadAsStringAsync(ct);
+            //    _logger.LogError(
+            //        "[ElsaPublishAdapter] Publish failed {Status} {Url} {Body}",
+            //        (int)publishResponse.StatusCode, publishUrl, body);
 
-                return new WorkflowPublishResult(false,
-                    $"Elsa publish {(int)publishResponse.StatusCode}: {body}");
-            }
+            //    return new WorkflowPublishResult(false,
+            //        $"Elsa publish {(int)publishResponse.StatusCode}: {body}");
+            //}
 
             return new WorkflowPublishResult(true);
         }
@@ -154,8 +174,8 @@ namespace EnterpriseWorkflow.Elsa.Adapters;
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             ?? new();
 
-        var engineType = config.TryGetValue("engineType", out var et)
-            ? et?.ToString() ?? "Unknown" : "Unknown";
+      var engineType = config.TryGetValue("engineType", out var et)
+    ? et?.ToString() ?? "Unknown" : "Unknown";
 
         var activity = new Dictionary<string, object>
         {

@@ -11,6 +11,8 @@ public interface IWorkflowExecutionRepository
 {
 
     Task<long> InsertAsync(WorkflowExecution e, CancellationToken ct);
+
+    Task<WorkflowExecution?> GetByExecutionNoUsingEnterpriseInstanceNumberAsync(long EnterpriseInstanceNumber, CancellationToken ct);
     Task UpdateStatusAsync(
 long workflowExecutionId, string status, string systemStatus, string businessStatus,
 DateTime? endDateTime, string? failureReason, CancellationToken ct);

@@ -9,9 +9,11 @@
 
   <ItemGroup>
     <Content Remove="Stubs\RuleDefinitions.json" />
+    <Content Remove="Stubs\rules.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Stubs\rules.json" />
     <None Include="Stubs\RuleDefinitions.json" />
   </ItemGroup>
 

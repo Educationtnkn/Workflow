@@ -19,6 +19,7 @@ using EnterpriseWorkflow.Storage.Implementations.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using NdRulesEngine;
 using Quartz;
 
 namespace EnterpriseWorkflow.Elsa.Extensions;
@@ -123,6 +124,7 @@ public static class ElsaAdapterServiceExtensions
 
         services.AddScoped<IWaitStateRepository, WaitStateRepository>();
 
+
         // ── 6. Application services ───────────────────────────────────────────────
         services.AddScoped<EnterpriseToElsaMapper>();
         services.AddScoped<WorkflowActivityLogRepository>();
@@ -136,21 +138,40 @@ public static class ElsaAdapterServiceExtensions
             .AsImplementedInterfaces()
             .WithScopedLifetime());
 
+ 
+
         return services;
     }
 
     public static IServiceCollection AddRuleEngine(
         this IServiceCollection services)
     {
-        const string ruleDefinitionsPath = "Stubs/RuleDefinitions.json";
 
-        services.Configure<JsonRuleRepositoryOptions>(
-            o => o.FilePath = ruleDefinitionsPath);
+
+        services.AddNdRulesEngine();
+
+        var provider = services.BuildServiceProvider();
+
+        var registry = provider.GetRequiredService<INdPluginRegistry>();
+        registry.ScanAssembly(typeof(Program).Assembly);
+
+        //var engine = provider.GetRequiredService<INdRuleEngine>();
+        //engine.LoadWorkflowFromJson(File.ReadAllText("rules.json"));
+
+        services.TryAddSingleton<IRuleInputBuilder, RuleInputBuilder>();
+
+        services.TryAddSingleton<IRuleEngineExecutionService, NdBackedRuleEngineExecutionService>();
+
+        //const string ruleDefinitionsPath = "Stubs/RuleDefinitions.json";
+
+        //services.Configure<JsonRuleRepositoryOptions>(
+        //    o => o.FilePath = ruleDefinitionsPath);
 
         services.TryAddSingleton<IRuleRepository, JsonRuleRepository>();
         services.TryAddSingleton<IRuleInputBuilder, RuleInputBuilder>();
-        services.TryAddSingleton<IRuleEngineExecutionService,
-            DbBackedRuleEngineExecutionService>();
+        //services.TryAddSingleton<IRuleEngineExecutionService,
+        //    DbBackedRuleEngineExecutionService>();
+
 
         return services;
     }

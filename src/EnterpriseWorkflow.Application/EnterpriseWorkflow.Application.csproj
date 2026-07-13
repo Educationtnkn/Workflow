@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="ND.FW.ExceptionHandling" Version="0.0.5" />
     <PackageReference Include="ND.FW.Observability" Version="0.0.5" />
+    <PackageReference Include="NdRulesEngine" Version="1.0.0" />
 	  
   </ItemGroup>
 

@@ -15,6 +15,8 @@ public interface IWorkflowInstanceRepository
 
     Task<WorkflowInstance?> GetByInstanceNumberAsync(string workflowInstanceNumber, CancellationToken ct);
 
+    Task<WorkflowInstance?> GetByInstanceNumberUsingEngineInstanceNumberAsync(string EngineInstanceNumber, CancellationToken ct);
+
     Task<WorkflowInstance?> GetByPredicateAsync(string predicate, object key, CancellationToken ct);
 
    Task<CurrentStatusDto> GetCurrentStatusAsync(long workflowInstanceId, CancellationToken ct);
@@ -22,4 +24,10 @@ public interface IWorkflowInstanceRepository
     Task UpdateStatusAsync(
         long workflowInstanceId, string status, string systemStatus, string businessStatus,
         CancellationToken ct, string? failureReason = null);
+
+
+    Task UpdateEngineWorkflowInstanceAsync(
+     string workflowInstanceNumber, string enterpriseInstanceId,
+        CancellationToken ct, string? failureReason = null);
+
 }

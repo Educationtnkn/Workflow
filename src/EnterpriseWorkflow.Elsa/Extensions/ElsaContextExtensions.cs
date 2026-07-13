@@ -9,6 +9,7 @@ namespace EnterpriseWorkflow.Elsa.Extensions
     {
         private const string EnterpriseInstanceIdKey = "EnterpriseInstanceId";
         private const string EnterpriseExecutionIdKey = "EnterpriseExecutionId";
+        private const string InstanceNumberKey = "InstanceNumber";
 
         // Added to resolve CS1061: provide a way to read variables from WorkflowExecutionContext.
         // Uses reflection to avoid depending on a specific Variable shape; tries 'Name'/'Value' properties.
@@ -60,43 +61,40 @@ namespace EnterpriseWorkflow.Elsa.Extensions
 
         public static long GetEnterpriseInstanceId(this WorkflowExecutionContext ctx)
         {
-            // Try variable first, then workflow-execution context properties, then workflow definition properties
-            object? value = ctx.GetVariable(EnterpriseInstanceIdKey);
-
-            if (value == null && ctx.Properties != null)
-            {
-                if (ctx.Properties.TryGetValue(EnterpriseInstanceIdKey, out var propVal))
-                    value = propVal;
-            }
-
-            // Workflow does not expose a 'Properties' member; use CustomProperties (or Metadata) instead.
-            if (value == null && ctx.Workflow?.CustomProperties != null)
-            {
-                if (ctx.Workflow.CustomProperties.TryGetValue(EnterpriseInstanceIdKey, out var wfPropVal))
-                    value = wfPropVal;
-            }
-
-            return Convert.ToInt64(value ?? 0L);
+            // WorkflowInput is populated on ActivityExecutionContext even when
+            // Variables/Properties are empty (e.g. inside a nested ExecuteWorkflow activity)
+            return ctx.Properties.TryGetValue("EnterpriseInstanceId", out var value)
+           ? Convert.ToInt64(value)
+           : 0;
         }
 
         public static long GetEnterpriseExecutionId(this WorkflowExecutionContext ctx)
         {
-            object? value = ctx.GetVariable(EnterpriseExecutionIdKey);
+            return ctx.Properties.TryGetValue("EnterpriseExecutionId", out var value)
+       ? Convert.ToInt64(value)
+       : 0;
+        }
 
-            if (value == null && ctx.Properties != null)
+        public static string? GetInstanceNumber(this ActivityExecutionContext ctx)
+        {
+            if (ctx.WorkflowInput != null &&
+                ctx.WorkflowInput.TryGetValue(InstanceNumberKey, out var val) && val != null)
             {
-                if (ctx.Properties.TryGetValue(EnterpriseExecutionIdKey, out var propVal))
-                    value = propVal;
+                return val.ToString();
             }
 
-            // Workflow does not expose a 'Properties' member; use CustomProperties (or Metadata) instead.
-            if (value == null && ctx.Workflow?.CustomProperties != null)
+            return ctx.WorkflowExecutionContext.GetInstanceNumber();
+        }
+
+        public static string? GetInstanceNumber(this WorkflowExecutionContext ctx)
+        {
+            if (ctx.Input != null &&
+              ctx.Input.TryGetValue(InstanceNumberKey, out var val) && val != null)
             {
-                if (ctx.Workflow.CustomProperties.TryGetValue(EnterpriseExecutionIdKey, out var wfPropVal))
-                    value = wfPropVal;
+                return val.ToString();
             }
 
-            return Convert.ToInt64(value ?? 0L);
+            return "0";
         }
     }
 }

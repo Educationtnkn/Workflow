@@ -23,7 +23,8 @@ namespace EnterpriseWorkflow.Elsa.Notifications;
 public class ElsaNotificationHandler :
     INotificationHandler<ActivityExecuting>,
     INotificationHandler<ActivityExecuted>,
-    INotificationHandler<WorkflowExecuted>
+    INotificationHandler<WorkflowExecuted>,
+     INotificationHandler<WorkflowExecuting> 
     //INotificationHandler<WorkflowFaulted>,
     //INotificationHandler<WorkflowExecutionSuspended>
 {
@@ -96,10 +97,12 @@ public class ElsaNotificationHandler :
         var ctx = notification.ActivityExecutionContext;
         _logger.LogInformation("ActivityExecuting", $"Starting activity {ctx.Activity.Id}");
 
-        try
+                try
         {
             var enterpriseInstanceId = ctx.GetEnterpriseInstanceId();
             var enterpriseExecutionId = ctx.GetEnterpriseExecutionId();
+
+       
 
             if (enterpriseInstanceId == 0)
             {
@@ -108,9 +111,38 @@ public class ElsaNotificationHandler :
                 return;
             }
 
+            ctx.Properties["EnterpriseInstanceId"] = enterpriseInstanceId;
+            ctx.Properties["EnterpriseExecutionId"] = enterpriseExecutionId;
+
+
+            // Also store instance number
+            var instanceNumber = ctx.GetInstanceNumber();
+            if (!string.IsNullOrEmpty(instanceNumber))
+            {
+                ctx.Properties["InstanceNumber"] = instanceNumber;
+            }
+
+            // Update the database with Elsa Instance ID - do this only once per workflow
+            var elsaInstanceId = ctx.WorkflowExecutionContext.Id;
+
+            // Use a flag to ensure we only update once
+            if (!ctx.WorkflowExecutionContext.Properties.ContainsKey("ElsaInstanceIdUpdated"))
+            {
+                await _instanceRepo.UpdateEngineWorkflowInstanceAsync(
+                    elsaInstanceId,
+                    instanceNumber ?? ctx.WorkflowExecutionContext.CorrelationId ?? string.Empty,
+                    ct,
+                    "Running");
+
+                ctx.WorkflowExecutionContext.Properties["ElsaInstanceIdUpdated"] = true;
+
+                _logger.LogInformation("ActivityExecuting",
+                    $"Updated enterprise instance {enterpriseInstanceId} with Elsa instance ID {elsaInstanceId}");
+            }
             // KEY FIX: look up by the actual Elsa activity id, not a hardcoded 0
             var configNode = await _configNodeLookup
                 .GetByEngineActivityReferenceAsync(ctx.Activity.Id, ct);
+
 
             if (configNode is null)
             {
@@ -151,6 +183,11 @@ public class ElsaNotificationHandler :
                 Updated_By = 1,
                 Status_Code = 1
             }, ct);
+
+
+           
+
+
         }
         catch (Exception ex)
         {
@@ -193,7 +230,11 @@ public class ElsaNotificationHandler :
     {
         _logger.LogInformation("WorkflowExecuted", $"Workflow {notification.WorkflowExecutionContext.Id} completed");
         await UpdateInstanceStatusAsync(notification.WorkflowExecutionContext, "Completed", ct);
+
+
     }
+
+
 
     //public async Task HandleAsync(WorkflowFaulted notification, CancellationToken ct)
     //{
@@ -245,6 +286,45 @@ public class ElsaNotificationHandler :
     // ----------------------------------------------------------------
     // Shared status-update logic
     // ----------------------------------------------------------------
+    public async Task HandleAsync(WorkflowExecuting notification, CancellationToken ct)
+    {
+        var ctx = notification.WorkflowExecutionContext;
+        _logger.LogInformation("WorkflowExecuting", $"Workflow {ctx.Id} starting");
+
+        try
+        {
+            // The workflow is just starting - now we have the Elsa Instance ID available
+            var elsaInstanceId = ctx.Id;
+
+            // Get the enterprise IDs from input (these were set when workflow was dispatched)
+            var enterpriseInstanceId = ctx.GetEnterpriseInstanceId();
+            var enterpriseExecutionId = ctx.GetEnterpriseExecutionId();
+
+            if (enterpriseInstanceId == 0)
+            {
+                _logger.LogWarning("WorkflowExecuting",
+                    $"No EnterpriseInstanceId on workflow {elsaInstanceId} — skipping enterprise update.");
+               // return;
+            }
+
+            // NOW we can update the database with the Elsa instance ID
+            var instanceNumber = ctx.GetInstanceNumber(); // This was set as correlationId when starting the workflow
+
+            await _instanceRepo.UpdateEngineWorkflowInstanceAsync(
+                elsaInstanceId,
+                instanceNumber,
+                ct,
+                "Running");
+
+            _logger.LogInformation("WorkflowExecuting",
+                $"Updated enterprise instance {enterpriseInstanceId} with Elsa instance ID {elsaInstanceId}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("WorkflowExecuting",
+                $"Failed to update enterprise with Elsa instance ID for workflow {ctx.Id}: {ex.Message}");
+        }
+    }
 
     private async Task UpdateInstanceStatusAsync(
         WorkflowExecutionContext ctx, string elsaStatus, CancellationToken ct, Exception? ex = null)
@@ -258,10 +338,26 @@ public class ElsaNotificationHandler :
             {
                 _logger.LogError("UpdateInstanceStatus",
                     $"No EnterpriseInstanceId on workflow {ctx.Id}. Cannot update enterprise status.");
-                return;
-            }
+                //  return;
 
-            var (sys, biz) = StatusMap.GetValueOrDefault(elsaStatus, ("UNKNOWN", "Unknown"));
+                    // Try fallback to database lookup only if IDs aren't in context
+                    var EnterpriseInstanceRecord = await _instanceRepo
+                        .GetByInstanceNumberUsingEngineInstanceNumberAsync(ctx.ParentWorkflowInstanceId, ct);
+                    enterpriseInstanceId = EnterpriseInstanceRecord?.Workflow_Instance_ID ?? 0;
+
+                    if (enterpriseInstanceId == 0)
+                    {
+                        _logger.LogError("UpdateInstanceStatus",
+                            $"Cannot find enterprise instance for Elsa workflow {ctx.Id}");
+                        return;
+                    }
+
+                    var EnterpriseExecutionRecord = await _executionRepo
+                        .GetByExecutionNoUsingEnterpriseInstanceNumberAsync(enterpriseInstanceId, ct);
+                    enterpriseExecutionId = EnterpriseExecutionRecord?.Workflow_Execution_ID ?? 0;
+                }
+
+                var (sys, biz) = StatusMap.GetValueOrDefault(elsaStatus, ("UNKNOWN", "Unknown"));
             var previous = await _instanceRepo.GetCurrentStatusAsync(enterpriseInstanceId, ct);
 
             if (IsTerminal(previous.SystemStatus))
@@ -306,8 +402,8 @@ public class ElsaNotificationHandler :
                     : null,
                 Changed_By_Source_Type_Code = "ELSA",
                 Status_Changed_Date_Time = DateTime.UtcNow,
-                Created_By = 0,
-                Updated_By = 0,
+                Created_By = 1,
+                Updated_By = 1,
                 Status_Code = 1
             }, ct);
         }

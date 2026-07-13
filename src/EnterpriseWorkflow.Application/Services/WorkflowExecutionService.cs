@@ -98,7 +98,8 @@ public class WorkflowExecutionService : IWorkflowExecution
         var elsaInput = new Dictionary<string, object>
         { 
             ["EnterpriseInstanceId"] = instanceId,
-            ["EnterpriseExecutionId"] = executionId
+            ["EnterpriseExecutionId"] = executionId,
+            ["InstanceNumber"] = instanceNumber  // Add this
         };
         foreach (var kvp in request.Payload)
         {
@@ -131,6 +132,10 @@ public class WorkflowExecutionService : IWorkflowExecution
                 ErrorMessage = startResult.ErrorMessage
             };
         }
+
+        await _instanceRepo.UpdateEngineWorkflowInstanceAsync(
+             startResult.ElsaWorkflowInstanceId, instanceNumber,ct, startResult.Status);
+
 
         return new StartWorkflowResponse
         {

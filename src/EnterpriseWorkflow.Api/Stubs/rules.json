@@ -1,0 +1,10 @@
+{
+  "WorkflowName": "CustomerValidation",
+  "Rules": [
+    {
+      "RuleName": "PhoneRequired",
+      "Expression": "input1[\"phone\"] != null && input1[\"phone\"].ToString() != \"\"",
+      "ErrorMessage": "Phone is required."
+    }
+  ]
+}

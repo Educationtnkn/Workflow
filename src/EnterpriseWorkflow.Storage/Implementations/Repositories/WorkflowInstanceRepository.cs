@@ -62,6 +62,9 @@ public class WorkflowInstanceRepository : IWorkflowInstanceRepository
     public async Task<WorkflowInstance?> GetByInstanceNumberAsync(string workflowInstanceNumber, CancellationToken ct)
         => await GetByPredicateAsync("Workflow_Instance_Number = @Key", workflowInstanceNumber, ct);
 
+    public async Task<WorkflowInstance?> GetByInstanceNumberUsingEngineInstanceNumberAsync(string EngineInstanceNumber, CancellationToken ct)
+    => await GetByPredicateAsync("Engine_Instance_Reference = @Key", EngineInstanceNumber, ct);
+
     private async Task<WorkflowInstance?> GetByPredicateAsync(string predicate, object key, CancellationToken ct)
     {
         var sql = $@"
@@ -136,6 +139,7 @@ public class WorkflowInstanceRepository : IWorkflowInstanceRepository
                 Failure_Reason = @FailureReason,
                 Last_Activity_Date_Time = SYSUTCDATETIME(),
                 Updated_Date_Time = SYSUTCDATETIME()
+                 
             WHERE Workflow_Instance_ID = @Id;";
 
         await using var conn = new SqlConnection(_connectionString);
@@ -153,5 +157,25 @@ public class WorkflowInstanceRepository : IWorkflowInstanceRepository
     Task<WorkflowInstance?> IWorkflowInstanceRepository.GetByPredicateAsync(string predicate, object key, CancellationToken ct)
     {
         return GetByPredicateAsync(predicate, key, ct);
+    }
+
+
+    public async Task UpdateEngineWorkflowInstanceAsync(
+     string workflowInstanceNumber, string enterpriseInstanceId,
+        CancellationToken ct, string? failureReason = null)
+    {
+        const string sql = @"
+            UPDATE Workflow.WF_EXEC_Workflow_Instance
+            SET Engine_Instance_Reference = @Engine_Instance_Reference
+                 
+            WHERE Workflow_Instance_Number = @enterpriseInstanceId;";
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync(ct);
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Engine_Instance_Reference", workflowInstanceNumber);
+
+        cmd.Parameters.AddWithValue("@enterpriseInstanceId", enterpriseInstanceId);
+        await cmd.ExecuteNonQueryAsync(ct);
     }
 }

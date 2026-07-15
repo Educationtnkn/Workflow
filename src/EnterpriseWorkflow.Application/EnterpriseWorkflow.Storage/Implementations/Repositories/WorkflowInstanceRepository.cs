@@ -103,7 +103,7 @@ public class WorkflowInstanceRepository : IWorkflowInstanceRepository
             Cancelled_Date_Time = reader.IsDBNull(14) ? null : reader.GetDateTime(14),
             Failure_Reason = reader.IsDBNull(15) ? null : reader.GetString(15)
         };
-    }
+     }
 
     public async Task<CurrentStatusDto> GetCurrentStatusAsync(long workflowInstanceId, CancellationToken ct)
     {
@@ -176,6 +176,21 @@ public class WorkflowInstanceRepository : IWorkflowInstanceRepository
         cmd.Parameters.AddWithValue("@Engine_Instance_Reference", workflowInstanceNumber);
 
         cmd.Parameters.AddWithValue("@enterpriseInstanceId", enterpriseInstanceId);
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task UpdateElsaInstanceIdAsync(long workflowInstanceId, string elsaInstanceId, CancellationToken ct)
+    {
+        const string sql = @"
+        UPDATE Workflow.WF_EXEC_Workflow_Instance
+        SET Elsa_Workflow_Instance_Id = @ElsaId, Updated_Date_Time = SYSUTCDATETIME()
+        WHERE Workflow_Instance_ID = @Id;";
+
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync(ct);
+        await using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Id", workflowInstanceId);
+        cmd.Parameters.AddWithValue("@ElsaId", elsaInstanceId);
         await cmd.ExecuteNonQueryAsync(ct);
     }
 }

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using AppFW.Service.Interfaces.DTO;
+using EnterpriseWorkflow.Elsa.RuleEngineAdapter;
 using RulesEngine.Models;
 using System.Text.RegularExpressions;
 

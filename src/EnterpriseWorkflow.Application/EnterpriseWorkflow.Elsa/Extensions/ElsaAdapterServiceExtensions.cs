@@ -143,36 +143,47 @@ public static class ElsaAdapterServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddRuleEngine(
-        this IServiceCollection services)
+    //public static IServiceCollection AddRuleEngine(
+    //    this IServiceCollection services)
+    //{
+
+
+    //    services.AddNdRulesEngine();
+
+    //    var provider = services.BuildServiceProvider();
+
+    //    var registry = provider.GetRequiredService<INdPluginRegistry>();
+    //    registry.ScanAssembly(typeof(Program).Assembly);
+
+    //    //var engine = provider.GetRequiredService<INdRuleEngine>();
+    //    //engine.LoadWorkflowFromJson(File.ReadAllText("rules.json"));
+
+    //    services.TryAddSingleton<IRuleInputBuilder, RuleInputBuilder>();
+
+    //    services.TryAddSingleton<IRuleEngineExecutionService, NdBackedRuleEngineExecutionService>();
+
+    //    //const string ruleDefinitionsPath = "Stubs/RuleDefinitions.json";
+
+    //    //services.Configure<JsonRuleRepositoryOptions>(
+    //    //    o => o.FilePath = ruleDefinitionsPath);
+
+    //    services.TryAddSingleton<IRuleRepository, JsonRuleRepository>();
+    //    services.TryAddSingleton<IRuleInputBuilder, RuleInputBuilder>();
+    //    //services.TryAddSingleton<IRuleEngineExecutionService,
+    //    //    DbBackedRuleEngineExecutionService>();
+
+
+    //    return services;
+    //}
+
+
+    public static IServiceCollection AddRuleEngine(this IServiceCollection services)
     {
-
-
-        services.AddNdRulesEngine();
-
-        var provider = services.BuildServiceProvider();
-
-        var registry = provider.GetRequiredService<INdPluginRegistry>();
-        registry.ScanAssembly(typeof(Program).Assembly);
-
-        //var engine = provider.GetRequiredService<INdRuleEngine>();
-        //engine.LoadWorkflowFromJson(File.ReadAllText("rules.json"));
-
+        services.TryAddSingleton<IRuleRepository, SqlRuleRepository>();   // was JsonRuleRepository
         services.TryAddSingleton<IRuleInputBuilder, RuleInputBuilder>();
-
-        services.TryAddSingleton<IRuleEngineExecutionService, NdBackedRuleEngineExecutionService>();
-
-        //const string ruleDefinitionsPath = "Stubs/RuleDefinitions.json";
-
-        //services.Configure<JsonRuleRepositoryOptions>(
-        //    o => o.FilePath = ruleDefinitionsPath);
-
-        services.TryAddSingleton<IRuleRepository, JsonRuleRepository>();
-        services.TryAddSingleton<IRuleInputBuilder, RuleInputBuilder>();
-        //services.TryAddSingleton<IRuleEngineExecutionService,
-        //    DbBackedRuleEngineExecutionService>();
-
-
+        services.TryAddSingleton<IRuleEngineExecutionService, DbBackedRuleEngineExecutionService>();
         return services;
     }
+
+
 }

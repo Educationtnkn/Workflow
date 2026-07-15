@@ -20,26 +20,26 @@ namespace EnterpriseWorkflow.Domain.Configurations
     /// <summary>
     /// Configuration for HTTP call action
     /// </summary>
-    public class HttpConfig
-    {
-        public string Url { get; set; } = string.Empty;
-        public string Method { get; set; } = "GET"; // GET, POST, PUT, DELETE, PATCH
-        public Dictionary<string, string>? Headers { get; set; }
-        public object? Body { get; set; }
-        public int TimeoutSeconds { get; set; } = 30;
-        public bool FollowRedirects { get; set; } = true;
-        public string? ContentType { get; set; } = "application/json";
-    }
+    //public class HttpConfig
+    //{
+    //    public string Url { get; set; } = string.Empty;
+    //    public string Method { get; set; } = "GET"; // GET, POST, PUT, DELETE, PATCH
+    //    public Dictionary<string, string>? Headers { get; set; }
+    //    public object? Body { get; set; }
+    //    public int TimeoutSeconds { get; set; } = 30;
+    //    public bool FollowRedirects { get; set; } = true;
+    //    public string? ContentType { get; set; } = "application/json";
+    //}
 
     /// <summary>
     /// Configuration for WriteLine (logging) action
     /// </summary>
-    public class WriteLineConfig
-    {
-        public string Text { get; set; } = string.Empty;
-        public string? LogLevel { get; set; } = "Information"; // Information, Warning, Error, Debug
-        public string? Category { get; set; }
-    }
+    //public class WriteLineConfig
+    //{
+    //    public string Text { get; set; } = string.Empty;
+    //    public string? LogLevel { get; set; } = "Information"; // Information, Warning, Error, Debug
+    //    public string? Category { get; set; }
+    //}
 
     /// <summary>
     /// Configuration for SetVariable action
@@ -76,15 +76,15 @@ namespace EnterpriseWorkflow.Domain.Configurations
     /// <summary>
     /// Configuration for Approval action (human task)
     /// </summary>
-    public class ApprovalConfig
-    {
-        public string ApproverRole { get; set; } = string.Empty;
-        public string[]? ApproverEmails { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public int TimeoutHours { get; set; } = 48;
-        public bool AllowRejection { get; set; } = true;
-        public string? EscalationEmail { get; set; }
-    }
+    //public class ApprovalConfig
+    //{
+    //    public string ApproverRole { get; set; } = string.Empty;
+    //    public string[]? ApproverEmails { get; set; }
+    //    public string Message { get; set; } = string.Empty;
+    //    public int TimeoutHours { get; set; } = 48;
+    //    public bool AllowRejection { get; set; } = true;
+    //    public string? EscalationEmail { get; set; }
+    //}
 
     /// <summary>
     /// Configuration for Database query action

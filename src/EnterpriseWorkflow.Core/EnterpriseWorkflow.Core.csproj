@@ -9,8 +9,7 @@
     <ProjectReference Include="..\EnterpriseWorkflow.Application\EnterpriseWorkflow.Application.csproj" />
     <ProjectReference Include="..\EnterpriseWorkflow.Domain\EnterpriseWorkflow.Domain.csproj" />
     <ProjectReference Include="..\EnterpriseWorkflow.Elsa\EnterpriseWorkflow.Elsa.csproj" />
-	  <PackageReference Include="Elsa" Version="3.5.3" />
-	  <PackageReference Include="Elsa.Workflows.Runtime" Version="3.5.3" />  
+	 
   </ItemGroup>
 
   <PropertyGroup>

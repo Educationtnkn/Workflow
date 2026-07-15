@@ -1,4 +1,5 @@
 ﻿using EnterpriseWorkflow.Domain.Entities.Workflow;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,5 +30,12 @@ public interface IWorkflowInstanceRepository
     Task UpdateEngineWorkflowInstanceAsync(
      string workflowInstanceNumber, string enterpriseInstanceId,
         CancellationToken ct, string? failureReason = null);
+
+
+    // IWorkflowInstanceRepository — add
+    Task UpdateElsaInstanceIdAsync(long workflowInstanceId, string elsaInstanceId, CancellationToken ct);
+
+    // WorkflowInstanceRepository — implement
+
 
 }

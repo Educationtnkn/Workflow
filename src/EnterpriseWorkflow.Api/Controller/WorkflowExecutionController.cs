@@ -22,15 +22,17 @@ public class WorkflowExecutionController : ControllerBase
     private readonly IWorkflowExecution _executionService;
     private readonly ILoggingService _logger;
     private readonly INDTracerService _tracer;
+    private readonly IWorkflowEventTriggerService _eventTrigger;
 
     public WorkflowExecutionController(IWorkflowExecution exceutionService, 
         INDTracerService tracer,
-        ILoggingService logger, IWorkflowPublishService buildPublishElsa)
+        ILoggingService logger, IWorkflowPublishService buildPublishElsa, IWorkflowEventTriggerService eventTrigger )
     {
         _executionService = exceutionService;
         _tracer = tracer;
         _logger = logger;
         _buildPublishElsa = buildPublishElsa;
+        _eventTrigger = eventTrigger;
     }
 
     [HttpPost("exceuteWorkflow")]
@@ -82,6 +84,28 @@ public class WorkflowExecutionController : ControllerBase
         _tracer.AddEvent("approveWorkflow_completed_successfully");
         _tracer.SetStatus(ActivityStatusCode.Ok);
       //  _logger.LogInformation(serviceName, "[Controller] ApproveWorkflow API Ended", filterIds: filterIds);
+
+        return Ok(result);
+    }
+
+    [HttpPost("events/trigger")]
+    public async Task<IActionResult> TriggerEvent([FromBody] TriggerEventRequest request, CancellationToken ct)
+    {
+        const string serviceName = "TriggerEvent";
+        var filterIds = new Dictionary<string, object>
+        {
+            ["EventCode"] = request.EventCode,
+            ["WorkflowInstanceNumber"] = request.WorkflowInstanceNumber
+        };
+
+        _logger.LogInformation(serviceName, "[Controller] TriggerEvent API Started", filterIds: filterIds);
+
+        var ctx = BuildExecutionModel();
+        var result = await _eventTrigger.TriggerAsync(request, ctx, ct);
+
+        _tracer.AddEvent("trigger_event_completed_successfully");
+        _tracer.SetStatus(ActivityStatusCode.Ok);
+        _logger.LogInformation(serviceName, "[Controller] TriggerEvent API Ended", filterIds: filterIds);
 
         return Ok(result);
     }

@@ -59,21 +59,23 @@ namespace EnterpriseWorkflow.Elsa.Extensions
             return ctx.WorkflowExecutionContext.GetEnterpriseExecutionId();
         }
 
-        public static long GetEnterpriseInstanceId(this WorkflowExecutionContext ctx)
-        {
-            // WorkflowInput is populated on ActivityExecutionContext even when
-            // Variables/Properties are empty (e.g. inside a nested ExecuteWorkflow activity)
-            return ctx.Properties.TryGetValue("EnterpriseInstanceId", out var value)
-           ? Convert.ToInt64(value)
-           : 0;
-        }
+        //public static long GetEnterpriseInstanceId(this WorkflowExecutionContext ctx)
+        //{
+        //    // WorkflowInput is populated on ActivityExecutionContext even when
+        //    // Variables/Properties are empty (e.g. inside a nested ExecuteWorkflow activity)
+        //    return ctx.Properties.TryGetValue("EnterpriseInstanceId", out var value)
+        //   ? Convert.ToInt64(value)
+        //   : 0;
+        //}
 
-        public static long GetEnterpriseExecutionId(this WorkflowExecutionContext ctx)
-        {
-            return ctx.Properties.TryGetValue("EnterpriseExecutionId", out var value)
-       ? Convert.ToInt64(value)
-       : 0;
-        }
+       // public static long GetEnterpriseExecutionId(this WorkflowExecutionContext ctx)
+       // {
+       //     return ctx.Properties.TryGetValue("EnterpriseExecutionId", out var value)
+       //? Convert.ToInt64(value)
+       //: 0;
+       // }
+
+
 
         public static string? GetInstanceNumber(this ActivityExecutionContext ctx)
         {
@@ -86,15 +88,56 @@ namespace EnterpriseWorkflow.Elsa.Extensions
             return ctx.WorkflowExecutionContext.GetInstanceNumber();
         }
 
+        //public static string? GetInstanceNumber(this WorkflowExecutionContext ctx)
+        //{
+        //    if (ctx.Input != null &&
+        //      ctx.Input.TryGetValue(InstanceNumberKey, out var val) && val != null)
+        //    {
+        //        return val.ToString();
+        //    }
+
+        //    return "0";
+        //}
+
+
         public static string? GetInstanceNumber(this WorkflowExecutionContext ctx)
         {
-            if (ctx.Input != null &&
-              ctx.Input.TryGetValue(InstanceNumberKey, out var val) && val != null)
-            {
+            if (ctx.Input != null && ctx.Input.TryGetValue(InstanceNumberKey, out var val) && val != null)
                 return val.ToString();
+            return "0";
+        }
+
+        // Reads ctx.Properties — NOT reliably populated at the workflow level!
+        //public static long GetEnterpriseInstanceId(this WorkflowExecutionContext ctx)
+        //{
+        //    return ctx.Properties.TryGetValue("EnterpriseInstanceId", out var value)
+        //        ? Convert.ToInt64(value) : 0;
+        //}
+
+        public static long GetEnterpriseInstanceId(this WorkflowExecutionContext ctx)
+        {
+            if (ctx.Input != null &&
+                ctx.Input.TryGetValue(EnterpriseInstanceIdKey, out var inputVal) && inputVal != null)
+            {
+                return Convert.ToInt64(inputVal);
             }
 
-            return "0";
+            return ctx.Properties.TryGetValue(EnterpriseInstanceIdKey, out var propVal)
+                ? Convert.ToInt64(propVal)
+                : 0;
+        }
+
+        public static long GetEnterpriseExecutionId(this WorkflowExecutionContext ctx)
+        {
+            if (ctx.Input != null &&
+                ctx.Input.TryGetValue(EnterpriseExecutionIdKey, out var inputVal) && inputVal != null)
+            {
+                return Convert.ToInt64(inputVal);
+            }
+
+            return ctx.Properties.TryGetValue(EnterpriseExecutionIdKey, out var propVal)
+                ? Convert.ToInt64(propVal)
+                : 0;
         }
     }
 }

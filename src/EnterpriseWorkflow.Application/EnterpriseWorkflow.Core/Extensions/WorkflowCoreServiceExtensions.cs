@@ -81,8 +81,9 @@ namespace EnterpriseWorkflow.Core.Extensions
 
             services.AddScoped<IConfigNodeLookupRepository, ConfigNodeLookupRepository>();
 
+            // WorkflowCoreServiceExtensions.AddWorkflowCore — register
+            services.AddScoped<IWorkflowEventTriggerService, WorkflowEventTriggerService>();
 
-    
 
             //services.AddHttpClient("ElsaServer", c =>
             //{

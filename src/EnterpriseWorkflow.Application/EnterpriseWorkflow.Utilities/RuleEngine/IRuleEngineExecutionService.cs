@@ -1,4 +1,4 @@
-using AppFW.Service.Interfaces.DTO;
+using EnterpriseWorkflow.Elsa.RuleEngineAdapter;
 
 namespace AppFW.Utilities.RuleEngine
 {

@@ -1,7 +1,6 @@
 using System.Dynamic;
 using System.Text.Json;
-using AppFW.Service.Interfaces.DTO;
-
+using EnterpriseWorkflow.Elsa.RuleEngineAdapter;
 namespace AppFW.Utilities.RuleEngine
 {
     public class RuleInputBuilder : IRuleInputBuilder

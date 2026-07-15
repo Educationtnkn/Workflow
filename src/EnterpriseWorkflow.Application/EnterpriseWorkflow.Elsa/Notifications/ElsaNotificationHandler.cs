@@ -14,6 +14,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ public class ElsaNotificationHandler :
     INotificationHandler<ActivityExecuting>,
     INotificationHandler<ActivityExecuted>,
     INotificationHandler<WorkflowExecuted>,
-     INotificationHandler<WorkflowExecuting> 
+     INotificationHandler<WorkflowExecuting>
     //INotificationHandler<WorkflowFaulted>,
     //INotificationHandler<WorkflowExecutionSuspended>
 {
@@ -229,7 +230,17 @@ public class ElsaNotificationHandler :
     public async Task HandleAsync(WorkflowExecuted notification, CancellationToken ct)
     {
         _logger.LogInformation("WorkflowExecuted", $"Workflow {notification.WorkflowExecutionContext.Id} completed");
-        await UpdateInstanceStatusAsync(notification.WorkflowExecutionContext, "Completed", ct);
+
+        var ctx = notification.WorkflowExecutionContext;
+
+        _logger.LogInformation(
+            "WorkflowExecuted",
+            $"Status={ctx.Status}, SubStatus={ctx.SubStatus}");
+
+        await UpdateInstanceStatusAsync(ctx, ctx.Status.ToString(), ctx.SubStatus.ToString(), ct);
+
+ 
+       
 
 
     }
@@ -283,9 +294,45 @@ public class ElsaNotificationHandler :
     //    }
     //}
 
-    // ----------------------------------------------------------------
-    // Shared status-update logic
-    // ----------------------------------------------------------------
+    private async Task UpdateInstanceWaitState(
+    WorkflowExecutionContext ctx, string elsaStatus,Int64 enterpriseInstanceId, Int64 enterpriseExecutionId, CancellationToken ct, Exception? ex = null)
+    {
+
+        try
+        {
+           
+
+            if (enterpriseInstanceId == 0) return;
+
+           // await UpdateInstanceStatusAsync(ctx, "Suspended", ct);
+
+            await _waitStateRepo.InsertAsync(new WorkflowWaitState
+            {
+                Workflow_Instance_ID = enterpriseInstanceId,
+                Workflow_Execution_ID = enterpriseExecutionId,
+                Wait_State_Number = Guid.NewGuid().ToString("N"),
+                Wait_Sequence_Number = 1,
+                Wait_Type_Code = "BOOKMARK",
+                Wait_Reason_Code = "ELSA_SUSPENSION",
+                Wait_Correlation_Key = ctx.CorrelationId,
+                Wait_State_Status_Value = "Waiting",
+                Wait_State_System_Status_Value = "WAITING",
+                Wait_State_Business_Status_Value = "WaitingForInput",
+                Wait_Start_Date_Time = DateTime.UtcNow,
+                Created_By = 1,
+                Updated_By = 1,
+                Status_Code = 1
+            }, ct);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("WorkflowExecutionSuspended", $"Failed to log suspension for {ctx.Id}: {e.Message}");
+        }
+    }
+
+        // ----------------------------------------------------------------
+        // Shared status-update logic
+        // ----------------------------------------------------------------
     public async Task HandleAsync(WorkflowExecuting notification, CancellationToken ct)
     {
         var ctx = notification.WorkflowExecutionContext;
@@ -318,6 +365,8 @@ public class ElsaNotificationHandler :
 
             _logger.LogInformation("WorkflowExecuting",
                 $"Updated enterprise instance {enterpriseInstanceId} with Elsa instance ID {elsaInstanceId}");
+
+
         }
         catch (Exception ex)
         {
@@ -327,8 +376,17 @@ public class ElsaNotificationHandler :
     }
 
     private async Task UpdateInstanceStatusAsync(
-        WorkflowExecutionContext ctx, string elsaStatus, CancellationToken ct, Exception? ex = null)
+        WorkflowExecutionContext ctx, string elsaStatus, string elsaSubStatus, CancellationToken ct, Exception? ex = null)
     {
+
+        if (elsaSubStatus == "Suspended")
+        {
+            // If the workflow is not suspended, we can remove any existing wait state
+            var enterpriseInstanceId = ctx.GetEnterpriseInstanceId();
+            var enterpriseExecutionId = ctx.GetEnterpriseExecutionId();
+           
+            await UpdateInstanceWaitState(ctx, elsaSubStatus.ToString(), enterpriseInstanceId, enterpriseExecutionId, ct);
+        }   
         try
         {
             var enterpriseInstanceId = ctx.GetEnterpriseInstanceId();
@@ -342,13 +400,13 @@ public class ElsaNotificationHandler :
 
                     // Try fallback to database lookup only if IDs aren't in context
                     var EnterpriseInstanceRecord = await _instanceRepo
-                        .GetByInstanceNumberUsingEngineInstanceNumberAsync(ctx.ParentWorkflowInstanceId, ct);
+                        .GetByInstanceNumberUsingEngineInstanceNumberAsync(ctx.ParentWorkflowInstanceId == null ? ctx.Id : ctx.ParentWorkflowInstanceId, ct);
                     enterpriseInstanceId = EnterpriseInstanceRecord?.Workflow_Instance_ID ?? 0;
 
                     if (enterpriseInstanceId == 0)
                     {
                         _logger.LogError("UpdateInstanceStatus",
-                            $"Cannot find enterprise instance for Elsa workflow {ctx.Id}");
+                            $"Cannot find enterprise instance for Elsa  {ctx.Id}");
                         return;
                     }
 
@@ -406,6 +464,12 @@ public class ElsaNotificationHandler :
                 Updated_By = 1,
                 Status_Code = 1
             }, ct);
+
+
+            if (elsaSubStatus.ToString() == "Suspended")
+            {
+                await UpdateInstanceWaitState(ctx, elsaSubStatus.ToString(),enterpriseInstanceId, enterpriseExecutionId, ct);
+            }
         }
         catch (Exception ex_obj)
         {

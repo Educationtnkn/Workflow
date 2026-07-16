@@ -169,17 +169,20 @@ namespace EnterpriseWorkflow.Elsa.Adapters;
     private static Dictionary<string, object> BuildActivity(
         WorkflowNodeDto node, string workflowCode)
     {
-        var config = JsonSerializer.Deserialize<Dictionary<string, object>>(
-            node.ConfigJson ?? "{}",
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            ?? new();
+        //var config = JsonSerializer.Deserialize<Dictionary<string, object>>(
+        //    node.ConfigJson ?? "{}",
+        //    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        //    ?? new();
 
-      var engineType = config.TryGetValue("engineType", out var et)
-    ? et?.ToString() ?? "Unknown" : "Unknown";
+        var config = JsonSerializer.Deserialize<Dictionary<string, object>>(
+        node.ConfigJson ?? "{}",
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+
+        var engineType = config.TryGetValue("engineType", out var et) ? et?.ToString() ?? "Unknown" : "Unknown";
 
         var activity = new Dictionary<string, object>
         {
-            ["id"] = node.EngineActivityReference,
+            ["id"] = node.NodeName,
             ["nodeId"] = $"Workflow1:{workflowCode}_Flowchart:{node.EngineActivityReference}",
             ["type"] = engineType,
             ["version"] = 1,

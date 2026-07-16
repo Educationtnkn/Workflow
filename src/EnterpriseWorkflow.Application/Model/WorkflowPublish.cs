@@ -19,7 +19,8 @@ namespace EnterpriseWorkflow.Application.Model
 
     public record WorkflowNodeDto(
         string NodeTableType,
-        long NodeId,       
+        long NodeId,
+        string NodeName,
         string EngineActivityReference,
         string? ConfigJson,
         long SequenceNumber//,
